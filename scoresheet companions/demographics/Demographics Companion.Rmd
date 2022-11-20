@@ -1,0 +1,38 @@
+---
+title: "Demographics Companion"
+author: "K Schaumberg"
+date: "3/10/2022"
+output: html_document
+---
+
+Load scorekeeper, sjmisc, haven, readxl
+```{r, setup, echo = FALSE, message=FALSE}
+library(scorekeeper)
+library(sjmisc)
+library(haven)
+library(readxl)
+library(cgwtools)
+library(dplyr)
+```
+
+Load Raw Data file
+```{r, results='hide'}
+ALSPAC_Raw <- read_spss('ALSPAC.Raw.sav') %>% 
+  filter(qlet == "A")
+```
+
+
+```{r}
+demo_score <- read_excel("scoresheets/demographics_scoresheet_ALSPAC.xlsx")
+```
+
+```{r, warning=FALSE}
+demographics_scored <- scorekeep(ALSPAC_Raw, demo_score)
+```
+
+```{r}
+demographics <- demographics_scored [[7]]
+resave(demographics, file = 'ALSPAC_Cleaned.RData')
+```
+
+

@@ -1,0 +1,30 @@
+---
+title: "External Eating at age 14 R markdown"
+output:
+  html_document:
+    df_print: paged
+---
+The External eating at age 14 scale was adapted from the External Eating Subscale of the Dutch Eating Behaviors Questionnaire (DEBQ) (reference)
+A 7 item scale......xyz
+Graded on a 4 point likert scale from "Never" (1) to "Always" (4), that we recoded to be from "Never" (0) to "Always" (3)
+External eating was determined with the mean score of all seven items, .....xyz
+
+
+```{r}
+library(haven)
+library (readxl)
+library(scorekeeper)
+
+Alspac_Raw <- read_sav(AlSPAC.Raw.sav)
+
+ext_eat_score <- read_excel("Ext_eat_scoresheet.xlsx")
+read.sps
+
+scored_ext_eat <- scorekeep(ALSPAC_Raw, ext_eat_score)
+
+
+external_eating <- scored_ext_eat[[5]]
+save(external_eating, file = 'ALSPAC_Cleaned.RData')
+```
+
+

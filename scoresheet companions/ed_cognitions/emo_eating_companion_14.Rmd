@@ -1,0 +1,87 @@
+---
+title: "Emotional Eating at Age 14"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+bibliography: references.bib
+---
+
+## Background
+
+Scoring of the ALSPAC Emotional Eating Scale at age 14 This scale was
+developed as part of the Dutch Eating Behaviors Questionnaire
+(DEBQ)[@vanstrien1986] and has been used in multiple studies
+[@nolan2012] [@snoek2007] . The Emotional Eating scale is made up of 14
+items each of which represent a different emotional state. The scale
+asks respondents the frequency which they respond to a specific
+emotional state by consuming more food, ranging from "no, not at all"
+(1), "yes, usually" (1), "yes, sometimes" (2).
+
+## Scoresheet
+
+The full scoresheet can be found here [emo_eat_14](/emo_eat_14.xlsx)
+
+The 14 raw variables were renamed and recoded to better align with the
+response scale. "no, not at all" was set to 0, "yes, sometimes" was set
+to 1, and "yes, usually" was set to 2. A new set of dichotimized
+variables was created for the 14 raw variables. Finally sums were
+created for both the raw and dichotimized variables.
+
+## Key Variables
+
+Key Variables include the 14 original variables recoded, the sum of the
+original variables, as well as the sum of the 14 dichotomized variables.
+
+`emo_eat_irritated.14` 
+
+`emo_eat_nothingtodo.14` 
+
+`emo_eat_depressed.14`
+
+`emo_eat_lonely.14` 
+
+`emo_eat_letdown.14` 
+
+`emo_eat_happy.14`
+
+`emo_eat_unpleasent.14` 
+
+`emo_eat_anxious.14` 
+
+`emo_eat_wrong.14`
+
+`emo_eat_freight.14`
+
+`emo_eat_dissapoint.14` 
+
+`emo_eat_upset.14`
+
+`emo_eat_bored.14` 
+
+`emo_eat_excited.14` 
+
+`emo_eat_sum.14`
+
+`emo_eat_sum_d.14`
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/Volumes/data/Embark Lab/ALSPAC/Data')
+```
+
+```{r, echo=FALSE}
+library(haven)
+library (readxl)
+library(cgwtools)
+
+alspac_raw<- read_sav("AlSPAC.Raw.sav")
+
+emo_eat_14 <- read_excel("scoresheets/ED_cognitions_individual_sheets/emo_eat_14.xlsx")
+View(emo_eat_14)
+
+library(scorekeeper)
+scored_emo_eat_14 <- scorekeep(ALSPAC_Raw, emo_eat_14)
+
+#emotional_eating_14 <- ____[[6]]
+#resave(body_dissatisfaction, file = 'ALSPAC_Cleaned.RData')
+```

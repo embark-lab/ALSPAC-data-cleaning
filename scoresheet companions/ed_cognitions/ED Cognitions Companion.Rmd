@@ -1,0 +1,38 @@
+---
+title: "ED Cognitions Data Cleaning"
+author: "Katherine Schaumberg"
+date: "2/24/2022"
+output: html_document
+---
+
+Load scorekeeper, sjmisc, haven, readxl
+```{r, setup, echo = FALSE, message=FALSE}
+library(scorekeeper)
+library(sjmisc)
+library(haven)
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(cgwtools)
+```
+
+Load Raw Data file
+```{r, results='hide'}
+ALSPAC_Raw <- read_spss('ALSPAC.Raw.sav') %>% 
+  filter(qlet == 'A')
+```
+
+
+```{r}
+ed_cognitions_score <- read_excel("scoresheets/ed_cognitions/ED_cognitions_scoresheet_ALSPAC.xlsx")
+```
+
+```{r, warning=FALSE}
+ed_cognitions_scored <- scorekeep(ALSPAC_Raw, ed_cognitions_score)
+```
+
+```{r}
+ed_cognitions <- ed_cognitions_scored [[8]]
+resave(ed_cognitions, file = 'ALSPAC_Cleaned.RData')
+```
+

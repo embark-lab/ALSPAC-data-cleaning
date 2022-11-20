@@ -1,0 +1,33 @@
+---
+title: "Dieting at age 14"
+output: html_document
+---
+##Background
+The dieting at age 14 questionnaire is a set of two questions asked as a part of the ALSPAC study. Data from these questions has been used in multiple studies...(insert links). The two questions aim to learn the extent of dieting a respondent has taken part in. The first question asks the frequency of dieting and the second question asks about the length of diets in the past year.
+
+##Scoresheet
+1. The ID and raw variables are added to the scoresheet first
+2. Create an unskipped variable to remove respondents without dieting behavior 
+3. Recode the variables to align with lab standards
+4. Select the final 3 variables
+5. Run the Scorekeeper function with the raw data and the completed scoresheet
+
+##Key Variables
+`diet_freq.14`
+`diet_length.14`
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/Volumes/data/Embark Lab/ALSPAC/Data/')
+```
+
+```{r, echo = false}
+library (haven)
+library (scorekeeper)
+library (readxl)
+
+alspac_raw <- read_spss('../ALSPAC.Raw.sav')
+
+dieting_14_scoresheet <- read_excel("../scoresheets/ED_cognitions_individual_sheets/dieting_14_scoresheet.xlsx")
+
+scorekeep (alspac_raw, dieting_14_scoresheet)
+```

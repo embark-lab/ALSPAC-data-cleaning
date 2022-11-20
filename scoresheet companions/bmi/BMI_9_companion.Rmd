@@ -1,0 +1,39 @@
+---
+title: "BMI at age 9"
+output: html_document
+---
+The BMI at age 9 includes 5 separate variables, collected in the ALPSAC study, including weight and BMI (both in clinic and self reported), as well as the Standard Deviation (z-score) of the clinic BMI, which was calibrated using the 1990 British Growth Reference Charts. (put in Zotero Reference). 
+
+`wt_mean.9` and `bmi_mean.9` are computed as means of clinic and self-report, but will populate as clinic OR self-report if only one of those is available. Thus, it takes a most inclusive approach. `wt_best_avail.9` and `bmi_best_avail.9` are calculated by taking clinic weight and BMI, respectively, if available -- if not, it will take self-reported version.
+
+
+First we begin by Loading in the raw data and [scoresheet]("scoresheets/BMI/BMI_9_scoresheet.xlsx")
+
+```{r, echo=FALSE}
+library(haven)
+#ALSPAC_Raw <- read_sav("ALSPAC.Raw.sav")
+#View(ALSPAC_Raw)
+library(scorekeeper)
+library(readxl)
+#BMI_9_scoresheet <- read_excel("scoresheets/BMI/BMI_9_scoresheet.xlsx")
+#View(BMI_9_scoresheet)
+```
+
+Once the data and scoresheet have been loaded in we can begin running the scorekeeper function to clean the data. 
+
+```{r}
+#scorekeep(ALSPAC_Raw, BMI_9_scoresheet)
+```
+
+finally we save the cleaned data into the larger data file
+```{r}
+### Add code to save data
+```
+
+Key variables for weight and BMI at age 9 are: 
+
+`wt_best_avail.9`  (Clinic weight if available, otherwise self-report)
+
+`bmi_best_avail.9` (Clinic BMI if available, otherwise self-report)
+
+`bmi_zscore.9` (BMI z-score for clinic-reported BMI based on 1990 growth charts)

@@ -1,0 +1,37 @@
+---
+title: "Dieting at Age 16"
+output: html_document
+---
+##Background
+redo
+
+##Scoresheet
+1. The ID and raw variables are added to the scoresheet first
+REDO
+
+##Key Variables
+`diet_lost.16`
+`diet.regain.16`
+`diet_length.16`
+`diet_freq.16`
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/Volumes/data/Embark Lab/ALSPAC/Data/')
+```
+
+```{r}
+library(haven)
+library (readxl)
+library(cgwtools)
+
+alspac_raw<- read_sav("../AlSPAC.Raw.sav")
+
+dieting_16 <- read_excel("../data_cleaning/scoresheets/ED_cognitions_individual_scoresheets/dieting_16_scoresheet.xlsx")
+
+library(scorekeeper)
+scored_emo_eat_14 <- scorekeep(alspac_raw, dieting_16)
+
+dieting_16_scored <- scored_emo_eat_14[[6]]
+resave(body_dissatisfaction, file = 'ALSPAC_Cleaned.RData')
+```
+

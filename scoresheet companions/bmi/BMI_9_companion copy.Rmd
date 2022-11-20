@@ -1,0 +1,41 @@
+---
+title: "BMI at age 9"
+output: html_document
+---
+## Background
+The BMI at age 9 includes 5 separate variables, collected in the ALPSAC study, including weight and BMI (both in clinic and self reported), as well as the Standard Deviation (z-score) of the clinic BMI, which was calibrated using the 1990 British Growth Reference Charts. (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1511150/). 
+`wt_mean.9` and `bmi_mean.9` are computed as means of clinic and self-report, but will populate as clinic OR self-report if only one of those is available. Thus, it takes a most inclusive approach. `wt_best_avail.9` and `bmi_best_avail.9` are calculated by taking clinic weight and BMI, respectively, if available -- if not, it will take self-reported version.
+
+## Scoresheet
+The full scoresheet for the BMI at age 9 variables can be found here: [BMI_9_scoresheet](scoresheets/BMI/BMI_9_scoresheet.xlsx)
+
+##Key Variables 
+
+`wt_best_avail.9`  (Clinic weight if available, otherwise self-report)
+
+`bmi_best_avail.9` (Clinic BMI if available, otherwise self-report)
+
+`bmi_zscore.9` (BMI z-score for clinic-reported BMI based on 1990 growth charts)
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/Volumes/data/Embark Lab/ALSPAC/Data')
+```
+
+```{r, echo=FALSE}
+
+library(haven)
+library(scorekeeper)
+library(readxl)
+
+ALSPAC_Raw <- read_sav("ALSPAC.Raw.sav")
+
+
+BMI_9_scoresheet <- read_excel("scoresheets/BMI/BMI_9_scoresheet.xlsx")
+
+
+bmi_9_scored <- scorekeep(ALSPAC_Raw, BMI_9_scoresheet)
+
+bmi_9_scored[[5]]
+
+```
+

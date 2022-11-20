@@ -1,0 +1,44 @@
+---
+title: "Restained Eating at age 14"
+output: html_document
+bibliography: references.bib
+---
+
+## Variable Background (origins and psychometric properties)
+
+The restrained eating scale contains two variables taken from the Dutch Eating Behaviors Questionnaire (DEBQ) [@vanstrien1986] has previously been used in the following studies[@snoek2007] [@wardle1986] . The first item asks whether the respondent eats less than they would want at meal times, the second item records the frequency with which the respondent refuses food or drink as they are concerned about weight.
+
+## Scoresheet
+
+The full scoresheet for the restrained eating measure at age 14 can be found here [restrained_eat_14](/restrained_eating_14.xlsx)
+
+The raw variables were renamed and recoded to better align with the response scale for `restraint_mealtime.14` "No" was set to zero, 'Sometimes' was set to 1, and "Usually" was set to 2. for `restraint_wt_concern_freq.14` Never was set to 0, Occasionally was set to 1, "Sometimes" was set to 2, and "Frequently" was set to 3. In addition two variables were added that dichotomized these two items as present or absent. A sum of the two raw items was also completed, because the two items were on slightly different scales another variable was created to harmonize the weight concern frequency and weight concern at mealtime questions. Finally two sum scores were created, one summed the harmonized items while the other summed the dichotomized items.
+
+## Key Variables
+
+`restraint_mealtime.14`(frequency with wiich respondent restrained themself from eating at mealtimes)
+
+`restraint_wt_concern_freq.14`(frequency respondent refuses food or drink because they are concerned about weight) (reference what was used in the compiled ed cognitions for the right name)
+
+`restraint_sum.14`
+
+`restraint_sum_d.14`
+
+`restaint_sum_c.14`
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/Volumes/data/Embark Lab/ALSPAC/Data')
+```
+
+```{r, echo=FALSE}
+library(haven)
+library(readxl)
+library(scorekeeper)
+
+alspac_raw <- read.sav (ALSPAC.Raw.sav)
+
+restrain_eat_14<- read_excel(../scoresheets/ED_cognitions_indidual_sheets/restrained_eating_14.xlsx)
+
+scorekeep(aslpac_raw, restrain_eat_14)
+
+```

@@ -1,0 +1,99 @@
+---
+title: "Body Satisfaction at age 14 R markdown"
+output:
+  html_document:
+    df_print: paged
+editor_options: 
+  markdown: 
+    wrap: 72
+bibliography: references.bib
+---
+
+Scoring of the ALSPAC Body Satisfaction Scale at age 14 This scale is an
+adaptation of the Satisfaction and Dissatisfaction with Body Parts Scale
+the adaptation was developed by Eric Stice. [@Stice] It has been used in
+ALSPAC in the following studies [@Bornioli.2019, @Bornioli.2021] An 11
+item scale where one item differs between the sexes, two items grade
+overall body satisfaction (`body_sat_weight.14`, `body_sat_figure.14`)
+while the other nine refer to specific body parts (`body_sat_build.14`,
+`body_sat_breasts.14`, `body_sat_stomach.14`, `body_sat_waist.14`,
+`body_sat_thighs.14`, `body_sat_buttocks.14`, `body_sat_hips.14`,
+`body_sat_legs.14`, `body_sat_face.14`, `body_sat_hair.14`). Graded on a
+5 point likert scale from "Extremely Satisfied" (1) to "Extremely
+Dissatisfied" (5) Body dissatisfaction was determined with the mean
+score of all items using one different item in boys vs. girls, with
+higher scores indicating higher body dissatisfaction.
+
+Key Variables for Body Dissatisfaction at age 14 are:
+
+`body_sat_weight.14`
+
+`body_sat_figure.14`
+
+`body_sat_build.14`
+
+`body_sat_breasts.14`
+
+`body_sat_stomach.14`
+
+`body_sat_waist.14`
+
+`body_sat_thighs.14`
+
+`body_sat_buttocks.14`
+
+`body_sat_hips.14`
+
+`body_sat_legs.14`
+
+`body_sat_face.14`
+
+`body_sat_hair.14`
+
+`body_sat_mean.14`
+
+`body_sat_mean_NAs.14`
+
+First we Load the Raw Data
+
+```{r}
+library(haven)
+library (readxl)
+library(scorekeeper)
+library(cgwtools)
+
+load("body_dissat_test.RData")
+```
+
+and then we load the scoresheet
+
+```{r}
+
+body_sat_score <- read_excel("scoresheets/body_dissastisfaction_scoresheet_ALSPAC.xlsx") 
+View(body_sat_score)
+```
+
+Now we Load in the scorekeeper package and run the scorekeep function
+
+```{r}
+
+
+scored_body_sat <- scorekeep(body_dissat, body_sat_score)
+scored_body_sat
+```
+
+now we will save this into the body satisfaction cleaned data
+
+```{r}
+body_dissatisfaction <- scored_body_sat[[6]]
+resave(body_dissatisfaction, file = 'ALSPAC_Cleaned.RData')
+```
+
+```{r}
+scored_body_sat
+```
+
+We now have 15 variables the original raw variables, ID, participant
+sex, and the means of participant responses. because boys and girls
+received one different item on the scale we expect each participant to
+be missing one value.

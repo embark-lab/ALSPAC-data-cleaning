@@ -1,0 +1,60 @@
+---
+title: "Eating Behavior Data Cleaning"
+author: "Katherine"
+date: "2/3/2022"
+output: html_document
+---
+
+
+Load scorekeeper, sjmisc, haven, readxl, set working directory to the project directory
+```{r, setup, echo = FALSE, message=FALSE}
+library(scorekeeper)
+library(sjmisc)
+library(haven)
+library(readxl)
+library(cgwtools)
+library(dplyr)
+
+```
+
+Load Raw Data file
+```{r, results='hide'}
+ALSPAC_raw <- read_spss('ALSPAC.Raw.sav') %>% 
+  filter(qlet == 'A')
+```
+
+Load Binge Eating Scoresheet
+```{r, echo = TRUE}
+binge_score <- read_excel('scoresheets/binge_scoresheet_ALSPAC.xlsx')
+```
+
+Score binge eating data and save as 'binge_eating' 
+```{r, echo = TRUE, warning=FALSE}
+binge_scored <- scorekeep(ALSPAC_Raw, binge_score)
+binge_eating <- binge_scored[[8]]
+resave(binge_eating, file = 'ALSPAC_Cleaned.RData')
+```
+
+Load Compensatory Scoresheet    
+```{r}
+comp_score <- read_excel('data_cleaning/scoresheets/compensatory_scoresheet_ALSPAC.xlsx')
+```
+
+Score behaviors data and save as 'compensatory_behaviors' in the cleaned data file
+```{r, warning=FALSE}
+comp_scored <- scorekeep(ALSPAC_raw, comp_score)
+compensatory_behaviors <- comp_scored [[5]]
+resave(compensatory_behaviors, file = 'ALSPAC_Cleaned.RData')
+```
+
+Load Driven Exercise Scoresheet
+```{r}
+driven_ex_score <- read_excel('scoresheets/driven_ex_scoresheet_ALSPAC.xlsx')
+```
+
+score driven exercise data and save as 'driven exercise' in the cleaned data file
+```{r, warning=FALSE}
+ex_scored <- scorekeep(ALSPAC_raw, driven_ex_score)
+driven_exercise <- ex_scored [[7]]
+resave(driven_exercise, file = 'ALSPAC_Cleaned.RData')
+```
