@@ -17,13 +17,13 @@ library(dplyr)
 
 Load Raw Data file
 ```{r, results='hide'}
-ALSPAC_Raw <- read_spss('ALSPAC.Raw.sav') %>% 
+ALSPAC_Raw <- read_spss('data/Schaumberg_22June22.sav') %>% 
   filter(qlet == "A")
 ```
 
 
 ```{r}
-demo_score <- read_excel("scoresheets/demographics_scoresheet_ALSPAC.xlsx")
+demo_score <- read_excel("scoresheets/clean/Demographics.xlsx")
 ```
 
 ```{r, warning=FALSE}

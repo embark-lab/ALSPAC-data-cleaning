@@ -33,12 +33,12 @@ data <- read_sav('data/Schaumberg_22June22.sav') |>
 ```{r, warning=FALSE}
 
 # Load Individual Scoresheets
-filenames <- list.files('scoresheets/clean/') # MAKE SURE THIS IS THE CORRECT DIRECTORY NAME
+filenames <- list.files('scoresheets/clean/Step_1') # MAKE SURE THIS IS THE CORRECT DIRECTORY NAME
 filenames <- paste('scoresheets/clean', filenames, sep = '/' )
 ldf <- lapply(filenames, read_xlsx)
 
 # List of Measure Names from the Scoresheets
-measures <- list.files('scoresheets/clean') 
+measures <- list.files('scoresheets/clean/Step_1') 
 measures <- gsub('.xlsx*', '', measures)
 
 # Names the scoresheets
@@ -140,7 +140,7 @@ while (j <= length(cleaned_data)) {
 
 ```{r}
 cols <- colnames(long_data)
-cols <- cols[-c(1:3,65:75 )]
+cols <- cols[-c(1:3,65:78 )]
 
 wide_data <- long_data |> 
   tidyr::pivot_wider(id_cols = id,
