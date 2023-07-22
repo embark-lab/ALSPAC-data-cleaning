@@ -28,13 +28,13 @@ data <- read_sav('data/Schaumberg_22June22.sav') |>
 
 ## Clean known data issues
 
-# 2. Scorekeep 
+### 2. Scorekeep 
 
 ```{r, warning=FALSE}
 
 # Load Individual Scoresheets
 filenames <- list.files('scoresheets/clean/Step_1') # MAKE SURE THIS IS THE CORRECT DIRECTORY NAME
-filenames <- paste('scoresheets/clean', filenames, sep = '/' )
+filenames <- paste('scoresheets/clean/Step_1', filenames, sep = '/' )
 ldf <- lapply(filenames, read_xlsx)
 
 # List of Measure Names from the Scoresheets
@@ -62,49 +62,157 @@ cleaned_data[[i]] <-cleaned_last
 }
 ```
 
-## Run to get WHO BMI Z-scores for each Age 
+### 3. Run to get WHO BMI Z-scores
 
 ```{r}
 
 # adds in BMI and weights for a few that were missing from the orginal data; makes 'sex_z' variable with sex defined as 1 = Male 2 = Female for use in zscorer package 
 
-cleaned_data$BMI <- cleaned_data$BMI |> 
-  mutate(weight_clinic.186= bmi_clinic.186*(height_clinic.186/100)^2) |> 
+cleaned_data$BMI <- cleaned_data$BMI |>
+  #recode sex for zscorer to work
   mutate(sex_z= sex+1) |> 
-  pivot_longer(cols = matches("\\."), #pivots to long form
+  #pivots to long form using assessment age
+  pivot_longer(cols = matches("\\."), 
                names_sep = "\\.",
-               names_to = c(".value", "assess_agemos")) |> 
-  #Change out of range BMI values to NA (BMI > 50 or BMI < 8)
-  mutate(bmi_pub = na_if(bmi_pub, gt(50)|lt(8))) |> 
-  mutate(bmi_clinic = na_if(bmi_clinic, gt(50)|lt(8))) |> 
-  mutate(bmi_bestavail  = na_if(bmi_bestavail, gt(50)|lt(8)))
+               names_to = c(".value", "assess_agemos"))  |> 
+  #pivot longer again using bmiz collection type (clinic vs. pub)
+  pivot_longer(cols = c(height_clinic, height_pub, weight_clinic, weight_pub,  bmi_clinic, bmi_pub, agemos_clinic, agemos_pub, agewks_clinic, agewks_pub, reporter_pub, bmiz1990_clinic),
+               names_sep = "\\_",
+               names_to = c(".value", "bmi_collection_type")) |> 
+  filter(!rowSums(across(height:bmi, is.na)) == 3) |> 
+  #adds weight, height, and bmi if two are available and one is missing
+  mutate(  
+    #Change out of range BMI, height, and weight values to NA (BMI > 50 or BMI < 7)
+         bmi = na_if(bmi, gt(50) | lt(7)),
+         height = na_if(height, gt(220)),
+         weight = na_if(weight, gt(250)),
+    #calculates variable if other two are missing
+         weight = if_else(is.na(weight), bmi * (height / 100)^2, weight),
+         height = if_else(is.na(height), sqrt(weight / bmi) * 100, height),
+         bmi = if_else(is.na(bmi), weight / (height / 100)^2, bmi), 
+  #calculates agedays variable (needed for zscorer)
+         agedays_bmiz = case_when(!is.na(agewks) ~ agewks*7,
+                             !is.na(agemos) ~ agemos*30.437, 
+                             TRUE ~ NA_real_ ),
+         agedays_bmiz = pmin(agedays_bmiz, 228 * 30.437, na.rm = TRUE))
 
-cleaned_data$BMI <- cleaned_data$BMI |> 
-  mutate(agedays_clinic = case_when(!is.na(agewks_clinc) ~ agewks_clinc*7,
-                              !is.na(agemos_clinic) ~ agemos_clinic*30.437)) |> 
-  mutate(agedays_pub = case_when(!is.na(agewks_pub) ~ agewks_pub*7,
-                              !is.na(agemos_pub) ~ agemos_pub*30.437)) |> 
-  mutate(agedays_bestavail = agemos_bestavail*30.437)
 
 ## adds in bmi z scores 
-cleaned_data$BMI <- 
-  zscorer::addWGSR(cleaned_data$BMI, sex = 'sex_z', firstPart = 'weight_pub', secondPart = 'height_pub', thirdPart = 'agedays_pub', index ='bfa', output = 'bmiz_pub', digits = 3)
+cleaned_data$BMI <- zscorer::addWGSR(cleaned_data$BMI, sex = 'sex_z', firstPart = 'weight', secondPart = 'height', thirdPart = 'agedays_bmiz', index ='bfa', output = 'bmiz', digits = 3)
 
-cleaned_data$BMI <-
-  zscorer::addWGSR(cleaned_data$BMI, sex = 'sex_z', firstPart = 'weight_clinic', secondPart = 'height_clinic', thirdPart = 'agedays_clinic', index ='bfa', output = 'bmiz_clinic', digits = 3)
+```
+### 4. Add Bestavial BMI data for each Age 
 
-cleaned_data$BMI <-
-  zscorer::addWGSR(cleaned_data$BMI, sex = 'sex_z', firstPart = 'weight_bestavail', secondPart = 'height_bestavail', thirdPart = 'agedays_bestavail', index ='bfa', output = 'bmiz_bestavail', digits = 3)
+```{r}
+# Define the age groups from 10 to 20 years in months
+age_groups <- seq(120, 300, 12)  # From 10 years (120 months) to 25 years (300 months) in 12-month increments
 
-# Change out of range BMIZ values to NA 
-cleaned_data$BMI <- cleaned_data$BMI |> 
-  mutate(bmiz_pub = na_if(bmiz_pub, gt(10)|lt(-10))) |> 
-  mutate(bmiz_clinic = na_if(bmiz_clinic, gt(10)|lt(-10))) |> 
-  mutate(bmiz_bestavail  = na_if(bmiz_bestavail, gt(10)|lt(-10)))
+# Create a new dataset to store the calculated values
+bestavail_data <- data.frame()
+
+# Loop through each age group
+for (age_group in age_groups) {
+  # Filter the data for the current age group
+  current_age_group_data <- cleaned_data$BMI %>%
+    filter(between(assess_agemos, age_group - 12, age_group)) 
+  
+  # Arrange the data to prioritize 'clinic' over 'pub' data
+  current_age_group_data <- current_age_group_data %>%
+    arrange(desc(bmi_collection_type == "clinic"))
+  
+  # Group by 'id'
+  grouped_data <- current_age_group_data %>%
+    group_by(id)
+  
+  # Filter to keep only 'bestavail' rows within each 'id' group
+  best_rows <- grouped_data %>%
+    filter(
+      any(bmi_collection_type == "bestavail") |
+        (bmi_collection_type == "pub" & !any(bmi_collection_type == "clinic")) |
+        (bmi_collection_type == "clinic" & !any(bmi_collection_type == "pub"))
+    )
+  
+  # Create new variables with the best available data
+  new_rows <- best_rows %>%
+    slice(1) %>%
+    mutate(bmi_collection_type = "bestavail",
+           assess_agemos = age_group) |> 
+    unique()
+  
+  # Append the new rows to the dataset
+  bestavail_data <- rbind(bestavail_data, new_rows)
+}
+
+     # Add the newly created rows to the original dataset
+cleaned_data$BMI <- rbind(cleaned_data$BMI, bestavail_data) |> 
+  unique()
+```
+
+### 5. Add mean BMIz scores for ages 7:12; 9:14; 11:16
+
+```{r}
+# Define a list of age pairs (first age, second age)
+age_pairs <- list(c(7, 12), c(9, 14), c(11, 16))
+
+# Loop through each age pair and calculate mean BMI-z score
+for (age_pair in age_pairs) {
+  # Extract first and second ages from the age_pair
+  first_age <- age_pair[1]
+  second_age <- age_pair[2]
+  
+  # Create a variable name for the new mean BMI-z score variable
+  new_var_name <- paste("mbmiz_", first_age, "_", second_age, sep = "")
+  
+  # Filter the BMI_data dataframe for the given age range
+  filtered_data <- cleaned_data$BMI %>%
+    filter(as.numeric(assess_agemos) > first_age * 12 & as.numeric(assess_agemos) < second_age * 12) %>%
+    group_by(id) %>%
+    mutate(!!new_var_name := mean(bmiz, na.rm = TRUE)) %>%
+    select(id, !!new_var_name) %>%
+    unique() %>%
+    filter(!is.na(!!new_var_name))
+  
+  # Assign the filtered data to a new data frame
+  assign(paste("BMIZ_", first_age, "_", second_age, sep = ""), filtered_data)
+}
+
+# Join BMIZ data frames together based on the "id" column
+mbmiz_data <- BMIZ_7_12 %>%
+  left_join(BMIZ_9_14, by = "id") %>%
+  left_join(BMIZ_11_16, by = "id") 
+```
+
+# 6. Add BMIz drop variables for ages 14, 16, 18, and 24
+
+```{r}
+cols <- colnames(cleaned_data$BMI)
+cols <- cols[!cols %in% c('bmi_collection_type', 'id', 'sex', 'sex_z')]
+
+BMI_bestavail_wide <- cleaned_data$BMI |> 
+  tidyr::pivot_wider(id_cols = c(id, sex),
+              values_from = cols,
+              names_from = c(bmi_collection_type, assess_agemos),
+              names_glue = "{.value}_{bmi_collection_type}.{assess_agemos}") |> 
+  janitor::remove_empty("cols")
+
+BMI_bestavail_wide <- full_join(BMI_bestavail_wide, mbmiz_data) |> 
+  mutate(bmiz_drop_raw.168 = mbmiz_7_12 - `bmiz_bestavail.168`, 
+         bmiz_drop.168 = case_when(bmiz_drop_raw.168 > .5 ~ 1,
+                                   bmiz_drop_raw.168 < .5 ~ 0 ),
+         bmiz_drop_raw.192 = mbmiz_9_14 - `bmiz_bestavail.192`, 
+         bmiz_drop.192 = case_when(bmiz_drop_raw.192 > .5 ~ 1,
+                                   bmiz_drop_raw.192 < .5 ~ 0 ),
+         bmiz_drop_raw.216 = mbmiz_11_16 - `bmiz_bestavail.216`, 
+         bmiz_drop.216 = case_when(bmiz_drop_raw.216 > .5 ~ 1,
+                                   bmiz_drop_raw.216 < .5 ~ 0 ),
+         bmiz_drop_raw.288 = `bmiz_bestavail.216` - `bmiz_bestavail.288`, 
+         bmiz_drop.288 = case_when(bmiz_drop_raw.288 > .5 ~ 1,
+                                   bmiz_drop_raw.288 < .5 ~ 0 )
+         )
 
 ```
 
-# 4. Long Dataset
+# 7. Long Dataset
 
 ```{r}
 cleaned_data$Binge <- cleaned_data$Binge |> 
@@ -127,6 +235,13 @@ cleaned_data$ED_cognitions <- cleaned_data$ED_cognitions |>
                names_sep = "\\.",
                names_to = c(".value", "assess_agemos")) 
 
+cleaned_data$BMI <- BMI_bestavail_wide %>%
+  pivot_longer(
+    cols = matches("\\."),
+    names_sep = "\\.",
+    names_to = c(".value", "assess_agemos")) |> 
+  select (-c('assess_agemos_pub', 'assess_agemos_clinic', 'assess_agemos_bestavail'))
+
 long_data <- cleaned_data[[1]]
 
 j = 2
@@ -136,26 +251,29 @@ while (j <= length(cleaned_data)) {
 }
 ```
 
-# 5. Wide Dataset
+# 8. Wide Dataset
 
 ```{r}
 cols <- colnames(long_data)
-cols <- cols[-c(1:3,65:78 )]
+static_vars <- c('id', 'sex', 'birth_order', 'occupation_class_mum', 'occupation_class_partner', 'education_mum', 'education_mum_d', 'education_partner', 'education_partner_d', 'ethnicity_child', 'parent_highest_occ.1', 'parent_highest_occ.2', 'parent_highest_occupation', 'ethnicity_mum', 'ethnicity_ptnr')
+cols <- cols[!cols %in% static_vars]
 
 wide_data <- long_data |> 
-  tidyr::pivot_wider(id_cols = id,
-              values_from = cols,
-              names_from = assess_agemos) |> 
+  tidyr::pivot_wider(
+    id_cols = c(id, sex, birth_order, occupation_class_mum, occupation_class_partner, education_mum, education_mum_d, education_partner, education_partner_d, ethnicity_child, parent_highest_occ.1, parent_highest_occ.2, parent_highest_occupation, ethnicity_mum, ethnicity_ptnr),
+    values_from = cols,
+    names_from = assess_agemos,
+    names_glue = "{.value}.{assess_agemos}"
+  ) |>
   janitor::remove_empty("cols")
+
 ```
 
-
-# 6. Save cleaned data 
+# 9. Save cleaned data 
 ```{r}
 # Dataset with dataframes separated by measure
 ALSPAC_cleaned <- cleaned_data
 save(ALSPAC_cleaned, file = 'data/ALSPAC_cleaned.RData') 
-
 
 # Long Dataframe
 ALSPAC_long <- long_data
@@ -163,6 +281,8 @@ save(ALSPAC_long, file = 'data/ALSPAC_long.RData')
 
 # Wide Dataframe
 ALSPAC_wide <- wide_data
+
+
 save(ALSPAC_wide, file = 'data/ALSPAC_wide.RData') 
 ```
 
