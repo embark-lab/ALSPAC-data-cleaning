@@ -148,11 +148,11 @@ cleaned_data$BMI <- rbind(cleaned_data$BMI, bestavail_data) |>
   unique()
 ```
 
-### 5. Add mean BMIz scores for ages 8:13; 9:15; 12:17
+### 5. Add mean BMIz scores for ages 7:13; 9:15; 11:17
 
 ```{r}
 # Define a list of age pairs (first age, second age)
-age_pairs <- list(c(8, 13), c(10, 15), c(12, 17))
+age_pairs <- list(c(7, 13), c(9, 15), c(11, 17))
 
 # Loop through each age pair and calculate mean BMI-z score
 for (age_pair in age_pairs) {
@@ -177,9 +177,9 @@ for (age_pair in age_pairs) {
 }
 
 # Join BMIZ data frames together based on the "id" column
-mbmiz_data <- BMIZ_8_13 %>%
-  left_join(BMIZ_10_15, by = "id") %>%
-  left_join(BMIZ_12_17, by = "id") 
+mbmiz_data <- BMIZ_7_13 %>%
+  left_join(BMIZ_9_15, by = "id") %>%
+  left_join(BMIZ_11_17, by = "id") 
 ```
 
 # 6. Add BMIz drop variables for ages 14, 16, 18, and 24
@@ -196,13 +196,13 @@ BMI_bestavail_wide <- cleaned_data$BMI |>
   janitor::remove_empty("cols")
 
 BMI_bestavail_wide <- full_join(BMI_bestavail_wide, mbmiz_data) |> 
-  mutate(bmiz_drop_raw.168 = mbmiz_8_13 - `bmiz_bestavail.168`, 
+  mutate(bmiz_drop_raw.168 = mbmiz_7_13 - `bmiz_bestavail.168`, 
          bmiz_drop.168 = case_when(bmiz_drop_raw.168 > .5 ~ 1,
                                    bmiz_drop_raw.168 < .5 ~ 0 ),
-         bmiz_drop_raw.192 = mbmiz_10_15 - `bmiz_bestavail.192`, 
+         bmiz_drop_raw.192 = mbmiz_9_15 - `bmiz_bestavail.192`, 
          bmiz_drop.192 = case_when(bmiz_drop_raw.192 > .5 ~ 1,
                                    bmiz_drop_raw.192 < .5 ~ 0 ),
-         bmiz_drop_raw.216 = mbmiz_12_17 - `bmiz_bestavail.216`, 
+         bmiz_drop_raw.216 = mbmiz_11_17 - `bmiz_bestavail.216`, 
          bmiz_drop.216 = case_when(bmiz_drop_raw.216 > .5 ~ 1,
                                    bmiz_drop_raw.216 < .5 ~ 0 ),
          bmiz_drop_raw.288 = `bmiz_bestavail.216` - `bmiz_bestavail.288`, 
