@@ -73,7 +73,7 @@ dx_data <- dx_data |>
 
 dx_vars <- c('AN', 'bn_present', 'binge_criteria_met', 'purge_disorder_present', 
              'AAN', 'sub_restrict', 'sub_bn_present', 'binge_sub_criteria_met')
-dx_vars_2 <- c('AN_noex', 'bn_present', 'binge_criteria_met', 'purge_disorder_present', 'AAN_noex', 'sub_restrict_noex', 'sub_bn_present', 'binge_sub_criteria_met', 'sub_restrict_exonly')
+dx_vars_2 <- c('AN_noex', 'bn_present', 'binge_criteria_met', 'purge_disorder_present', 'AAN_noex', 'sub_restrict_noex', 'sub_bn_present', 'binge_sub_criteria_met', 'sub_restrict_exonly', 'restrict_missingwt_noex')
 
 # Step 1: Create the ed_dx column without labeling.
 dx_data <- dx_data %>%
@@ -100,8 +100,9 @@ dx_data <- dx_data %>%
         AAN_noex == 1 ~ 5, 
         sub_bn_present == 1 ~ 6,
         binge_sub_criteria_met == 1 ~ 7,
-        sub_restrict_noex == 1 ~ 8,
-        sub_restrict_exonly == 1 ~ 9,
+        restrict_missingwt_noex == 1 ~ 8,
+        sub_restrict_noex == 1 ~ 9,
+        sub_restrict_exonly == 1 ~ 10,
         rowSums(select(dx_data, all_of(dx_vars_2))) == 0 ~ 0
   )
     )
@@ -115,9 +116,10 @@ dx_data <- dx_data |>
     aan_noex = ifelse(as.integer(ed_dx_noex) == 5, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
     an = ifelse(as.integer(ed_dx) == 1, 1, ifelse(is.na(ed_dx), NA, 0)),
     an_noex = ifelse(as.integer(ed_dx_noex) == 1, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
-    sub_restrict = ifelse(as.integer(ed_dx) == 8, 1, ifelse(is.na(ed_dx), NA, 0)),
-    sub_restrict_noex = ifelse(as.integer(ed_dx_noex) == 8, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
-    sub_restrict_exonly = ifelse(as.integer(ed_dx_noex) == 9, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
+    sub_restrict = ifelse(as.integer(ed_dx) == 9, 1, ifelse(is.na(ed_dx), NA, 0)),
+    sub_restrict_noex = ifelse(as.integer(ed_dx_noex) == 9, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
+    sub_restrict_exonly = ifelse(as.integer(ed_dx_noex) == 10, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
+    restrict_missingwt_noex_2 = ifelse(as.integer(ed_dx_noex) == 8, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
     other_ed = ifelse(as.integer(ed_dx) %in% other_ed_codes, 1, ifelse(is.na(ed_dx), NA, 0)),
     other_ed_noex = ifelse(as.integer(ed_dx_noex) %in% other_ed_codes, 1, ifelse(is.na(ed_dx_noex), NA, 0)),
     no_ed = ifelse(as.integer(ed_dx) == 0, 1, ifelse(is.na(ed_dx), NA, 0))
@@ -136,8 +138,9 @@ dx_data <- dx_data |>
       an_noex == 1 ~ 1, 
       aan_noex == 1 ~ 2, 
       other_ed_noex == 1 ~ 3,
-      sub_restrict_noex == 1 ~ 4, 
-      sub_restrict_exonly == 1 ~ 5,
+      restrict_missingwt_noex_2 == 1 ~ 4,
+      sub_restrict_noex == 1 ~ 5, 
+      sub_restrict_exonly == 1 ~ 6,
       no_ed == 1 ~ 0
     )
   )
@@ -161,7 +164,7 @@ dx_data$ed_dx <- factor(
 
 dx_data$ed_dx_noex <- factor(
   dx_data$ed_dx_noex, 
-  levels = 0:9,
+  levels = 0:10,
   labels = c(
     "No Diagnosis",
     "Anorexia Nervosa", 
@@ -171,6 +174,7 @@ dx_data$ed_dx_noex <- factor(
     "Atypical Anorexia Nervosa", 
     "Subthreshold Bulimia Nervosa",
     "Subthreshold Binge Eating Disorder",
+    "Restriction - BMIz or BMIz drop Missing",
     "Subthreshold Restriction",
     "Subthreshold Restriction - Exercise Only"
   )
@@ -192,12 +196,13 @@ dx_data$ed_restrict_dx <- factor(
 
 dx_data$ed_restrict_dx_noex <- factor(
   dx_data$ed_restrict_dx_noex, 
-  levels = 0:5,
+  levels = 0:6,
   labels = c(
     "No ED",
     "Restrict + Low BMIz (AN)", 
     "Restrict + BMIz drop (AAN)",
     "B/P Spectrum ED",
+    "Restrict - BMIz var missing",
     "Restrict - No BMIz drop",
     "Sub Restrict - Exercise Only"
   )
