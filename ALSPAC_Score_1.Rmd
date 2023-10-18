@@ -1,4 +1,4 @@
-This is the Scoring Script for ALSPAC Data. Little chage
+This is the Scoring Script for ALSPAC Data. 
 
 # 0. Load packages
 ```{r, message=FALSE}
@@ -207,7 +207,14 @@ BMI_bestavail_wide <- full_join(BMI_bestavail_wide, mbmiz_data) |>
                                    bmiz_drop_raw.216 < .5 ~ 0 ),
          bmiz_drop_raw.288 = `bmiz_bestavail.216` - `bmiz_bestavail.288`, 
          bmiz_drop.288 = case_when(bmiz_drop_raw.288 > .5 ~ 1,
-                                   bmiz_drop_raw.288 < .5 ~ 0 )
+                                   bmiz_drop_raw.288 < .5 ~ 0 ),
+         bmiz_drop.167 = bmiz_drop.168,
+         bmiz_drop_raw.167 = bmiz_drop_raw.168,
+         bmiz_bestavail.167 = bmiz_bestavail.168,
+         bmiz_pre.167 = mbmiz_7_13, 
+         bmiz_pre.192 = mbmiz_9_15, 
+         bmiz_pre.216 = mbmiz_11_17, 
+         bmiz_pre.288 = bmiz_bestavail.216
          )
 
 ```
